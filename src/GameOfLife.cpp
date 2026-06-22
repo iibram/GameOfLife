@@ -17,6 +17,8 @@ GameOfLife::GameOfLife(uint8_t rows, uint8_t cols, Figure figure, uint8_t percen
 	, rows(rows), cols(cols)
 	, figure(figure)
 {
+	Platform::initTerminal();
+
 	uint32_t assumedSize = maxSize * 4 + rows;		// An emoji square takes up approx. 4 bytes in UTF-8, plus any newlines
 	assumedSize += ((cols << 1) + (rows << 1));		// + borders
 
@@ -68,6 +70,8 @@ GameOfLife::~GameOfLife()
 	// wait until the thread has terminated cleanly
 	if (workerThread.joinable())
 		workerThread.join();
+
+	Platform::restoreTerminal();
 }
 
 void GameOfLife::initWorkerLUTs()
@@ -328,7 +332,7 @@ void GameOfLife::start_loop()
 			}
 		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(4));	// CPU conserving base sleep
+		std::this_thread::sleep_for(std::chrono::milliseconds(Platform::mainThreadSleepTime));	// CPU conserving sleep time (OS specific sweet spot)
 	}
 
 	// game is over; show the cursor again
@@ -381,22 +385,22 @@ void GameOfLife::swapBoards()
  */
 bool GameOfLife::processInput()
 {
-	KeyInput::Key key = KeyInput::getPressedKey();
+	Platform::Key key = Platform::getPressedKey();
 
-	if (key != KeyInput::Key::NONE)
+	if (key != Platform::Key::NONE)
 	{
 		uint16_t step = (updateTime > 345) ? 10 : 5;
 
-		if (key == KeyInput::Key::ESC)				// ending the game
+		if (key == Platform::Key::ESC)				// ending the game
 			isRunning = false;
 
-		else if (key == KeyInput::Key::SPACE)		// pausing the game
+		else if (key == Platform::Key::SPACE)		// pausing the game
 		{
 			isPaused = !isPaused;
 			accuTime = 0;
 		}
 
-		else if (key == KeyInput::Key::UP)			// speeding up the framerate
+		else if (key == Platform::Key::UP)			// speeding up the framerate
 		{
 			if (updateTime > step)
 				updateTime -= step;
@@ -404,7 +408,7 @@ bool GameOfLife::processInput()
 				updateTime = 5;
 		}
 
-		else if (key == KeyInput::Key::DOWN)		// slowing down the framerate
+		else if (key == Platform::Key::DOWN)		// slowing down the framerate
 		{
 			updateTime += step;
 			if (updateTime > 1000) updateTime = 1000;

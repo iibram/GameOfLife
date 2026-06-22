@@ -35,7 +35,7 @@ GameOfLife/
 ├── image/
 │   └── showcase.png      # High-resolution terminal showcase displaying engine metrics
 ├── src/
-│   ├── KeyInput.h        # Unified cross-platform input system (unified key codes)
+│   ├── Platform.h        # Cross-platform system abstraction (terminal config, OS timer tuning, unified keys)
 │   ├── GameOfLife.h      # Class architecture, compile-time UI constants, and Figure Enum
 │   ├── GameOfLife.cpp    # Definitions, core simulation engine, multithreading & memory LUTs
 │   └── main.cpp          # Application entry point with flexible instantiation examples
@@ -46,7 +46,7 @@ GameOfLife/
 
 ### Module Breakdown
 
-* **`KeyInput.h`**: Implements a synchronous, cross-platform terminal interface that translates low-level OS input streams (Windows `conio.h` / Linux `termios.h`) into unified internal key codes. It guarantees a single-press event evaluation per frame, effectively preventing CPU-heavy async polling chains.
+* **`Platform.h`**: Serves as a unified cross-platform hardware and OS abstraction layer. It configures high-precision OS timer scheduling (overriding the Windows 15.6ms default tick and managing Linux sleep constraints) to guarantee optimal frametimes. Additionally, it abstracts low-level terminal I/O (Windows `conio.h` / Linux `termios.h`) into unified internal key codes with single-press evaluation per frame, eliminating CPU-heavy async polling.
 * **`GameOfLife.h`**: Defines the blueprint of the simulation engine. It contains type-safe configurations, compile-time constants (`constexpr`) for zero-allocation terminal styling (ANSI escape sequences, cell glyphs), and the declarative layout of the central `Figure` enum.
 * **`GameOfLife.cpp`**: Houses the entire concrete implementation. It manages the lifecycle and synchronization boundaries of the persistent worker thread, pre-calculates the spatial 1D look-up tables (LUTs) for branchless wrapping, maps predefined shape coordinate arrays, and executes the core cellular automaton rules.
 * **`main.cpp`**: Serves as the clean application entry point. It demonstrates how to instantiate the engine seamlessly, exposing configurations for deploying either targeted structural seeds (e.g., Pulsar, Gosper Glider Gun) or statistically weighted, randomized distribution grids.

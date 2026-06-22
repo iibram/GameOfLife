@@ -1,5 +1,5 @@
 #pragma once
-#include "KeyInput.h"		// includes <iostream> already
+#include "Platform.h"			// includes <iostream> already
 #include <condition_variable>
 #include <sstream>
 #include <string>

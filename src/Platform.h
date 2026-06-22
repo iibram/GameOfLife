@@ -1,11 +1,12 @@
-#ifndef KEY_INPUT_H
-#define KEY_INPUT_H
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 #include <iostream>
 #include <cstdint>
 
 // Platform-specific input multiplexing
 #if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>					// Required for scheduler/timer resolution tuning (bypassing the 15.6ms default)
 #include <conio.h>
 #else
 #include <unistd.h>
@@ -15,7 +16,7 @@
 
 
 /**
- * @namespace KeyInput
+ * @namespace Platform
  * @brief Provides a lightweight, cross-platform, non-blocking keyboard input interface.
  *
  * This utility abstracts operating system differences between Windows (Console I/O) and POSIX/Linux (termios/select)
@@ -24,7 +25,7 @@
  * @author Ibrahim Ibram
  * @date May 2026
  */
-namespace KeyInput
+namespace Platform
 {
 	/**
 	 * @brief Strongly-typed representation of supported keyboard inputs mapped to standard ASCII/Virtual codes.
@@ -45,16 +46,30 @@ namespace KeyInput
 	// WINDOWS IMPLEMENTATION (using conio.h APIs)
 	// ======================================================================================================================
 
-	// Die Dummies für Windows (tun einfach nichts)
-	inline void initTerminal() {}
-	inline void restoreTerminal() {}
+	inline constexpr uint8_t mainThreadSleepTime = 4;				// Windows specific sweetspot
 
-	/**
-	 * @brief Queries the OS input buffer for a pending keystroke without blocking the calling thread.
-	 * @return The strongly-typed Key enum matching the pressed key, or Key::None if no input is available
-	 * @note On Linux/POSIX systems, this function temporarily disables canonical mode and echo to intercept
-	 * raw keystrokes immediately, restoring the original terminal state before returning.
-	 */
+	inline bool timerTargetSet = false;
+
+	// force Windows timer to maximum precision (1ms)
+	inline void initTerminal()
+	{
+		UINT targetTimerResolution = 1;
+		timerTargetSet = (timeBeginPeriod(targetTimerResolution) == TIMERR_NOERROR);
+	}
+
+	// reset the Windows timer
+	inline void restoreTerminal()
+	{
+		if (timerTargetSet)
+			timeEndPeriod(1);
+	}
+
+   /**
+	* @brief Queries the OS input buffer for a pending keystroke without blocking the calling thread.
+	* @return The strongly-typed Key enum matching the pressed key, or Key::None if no input is available
+	* @note On Linux/POSIX systems, this function temporarily disables canonical mode and echo to intercept
+	* raw keystrokes immediately, restoring the original terminal state before returning.
+	*/
 	inline Key getPressedKey()
 	{
 		if (_kbhit())
@@ -88,6 +103,8 @@ namespace KeyInput
 	// ======================================================================================================================
 	// LINUX / POSIX IMPLEMENTATION (using termios and I/O multiplexing)
 	// ======================================================================================================================
+
+	inline constexpr uint8_t mainThreadSleepTime = 3;				// Linux specific sweetspot
 
 	inline struct termios oldt, newt;
 
@@ -153,6 +170,6 @@ namespace KeyInput
 	// ======================================================================================================================
 	#endif
 
-} // namespace KeyInput
+} // namespace Platform
 
-#endif // KEY_INPUT_H
+#endif // PLATFORM_H
