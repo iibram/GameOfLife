@@ -99,7 +99,8 @@ while (isRunning)
         }
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(4)); // CPU conserving base sleep
+	// CPU conserving sleep time (@ OS specific sweet spots)
+    std::this_thread::sleep_for(std::chrono::milliseconds(Platform::mainThreadSleepTime));
 }
 ```
 

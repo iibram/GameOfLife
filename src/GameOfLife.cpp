@@ -332,7 +332,8 @@ void GameOfLife::start_loop()
 			}
 		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(Platform::mainThreadSleepTime));	// CPU conserving sleep time (OS specific sweet spot)
+		// CPU conserving sleep time (@ OS specific sweet spots)
+		std::this_thread::sleep_for(std::chrono::milliseconds(Platform::mainThreadSleepTime));
 	}
 
 	// game is over; show the cursor again
