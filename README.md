@@ -70,7 +70,7 @@ The loop is designed to be highly reactive. Inputs instantly force a state redra
 
 ## 🧠 The Loop Design & Thread Synchronization
 
-The main simulation loop balances extreme responsiveness with eco-friendly CPU utilization by embedding a baseline 4ms sleep interval to prevent context-switch thrashing.
+The main simulation loop balances extreme responsiveness with eco-friendly CPU utilization by embedding OS-specific sleep intervals (4ms on Windows, 3ms on Linux) tailored to each platform's scheduler sweet spots to prevent context-switch thrashing.
 
 ```cpp
 while (isRunning)
